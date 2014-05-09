@@ -15,7 +15,7 @@ func archiveFolder(config *ConfigFile) error {
 	for _, file := range files {
 		var fileName = filepath.Base(file.Path)
 		fmt.Println("downloading " + fileName)
-		var downloadError = downloadFile(config, file.Path, config.LocalPath+`\`+fileName)
+		var downloadError = downloadFile(config, file.Path, filepath.Join(config.LocalPath, fileName))
 		if downloadError != nil {
 			fmt.Println("error downloading: " + file.Path)
 			continue
