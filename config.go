@@ -1,7 +1,7 @@
 package main
 
 import (
-	"os"
+	"os/user"
 	"path/filepath"
 	"io/ioutil"
 	"encoding/json"
@@ -17,29 +17,38 @@ type ConfigFile struct {
 }
 
 func (conf *ConfigFile) Read(fname string) error {
+	var buf[]byte
+	var file string
 	var err error
-	var buf []byte
 
-	file := openFile(fname)
-	if buf, err = ioutil.ReadFile(file); err == nil {
-		err = json.Unmarshal(buf, conf)
+	if file, err = openFile(fname); err == nil {
+		if buf, err = ioutil.ReadFile(file); err == nil {
+			err = json.Unmarshal(buf, conf)
+		}
 	}
 
 	return err
 }
 
 func (conf *ConfigFile) Write(fname string) error {
-	var err error
 	var buf[]byte
+	var file string
+	var err error
 
-	file := openFile(fname)
-	if buf, err = json.MarshalIndent(conf, "", ""); err == nil {
-		err = ioutil.WriteFile(file, buf, 0600)
+	if file, err = openFile(fname); err == nil {
+		if buf, err = json.MarshalIndent(conf, "", ""); err == nil {
+			err = ioutil.WriteFile(file, buf, 0600)
+		}
 	}
 
 	return err
 }
 
-func openFile(fname string) string {
-	return filepath.Join(os.Getenv("HOME"), fname)
+func openFile(fname string) (string, error) {
+	usr, err := user.Current()
+	if err != nil {
+		// this should return nil perhaps
+		return "", err
+	}
+	return filepath.Join(usr.HomeDir, fname), nil
 }
