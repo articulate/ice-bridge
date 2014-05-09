@@ -2,19 +2,24 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 func main() {
+	var err error
 	fmt.Println("Hello from the ice-box")
 
 	var config ConfigFile
-	_ = config.Read(".icebridge")
+	err = config.Read(".icebridge")
+	exitIf(err)
 
-	var err = archiveFolder(&config)
+	err = archiveFolder(&config)
+	exitIf(err)
+}
 
+func exitIf(err error) {
 	if err != nil {
-		fmt.Println("Error: " + err.Error())
-		panic(err)
-		return
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }

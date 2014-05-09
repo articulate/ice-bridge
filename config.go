@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 )
 
+const configFilename = ".icebridge"
+
 type ConfigFile struct {
 	ClientId string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
@@ -17,7 +19,7 @@ type ConfigFile struct {
 }
 
 func (conf *ConfigFile) Read(fname string) error {
-	var buf[]byte
+	var buf[] byte
 	var file string
 	var err error
 
@@ -31,7 +33,7 @@ func (conf *ConfigFile) Read(fname string) error {
 }
 
 func (conf *ConfigFile) Write(fname string) error {
-	var buf[]byte
+	var buf[] byte
 	var file string
 	var err error
 
