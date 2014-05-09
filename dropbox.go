@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/stacktic/dropbox"
 	"path/filepath"
+
+	"github.com/stacktic/dropbox"
+	"github.com/skratchdot/open-golang/open"
 )
 
 func archiveFolder(config *ConfigFile) error {
@@ -71,7 +73,7 @@ func getBox(config *ConfigFile) (*dropbox.Dropbox, error) {
 		box = dropbox.NewDropbox()
 		box.SetAppInfo(config.ClientId, config.ClientSecret)
 
-		if token, err = getAccessToken(config); err == nil {
+		if token, err = getAccessToken(config, box); err == nil {
 			box.SetAccessToken(token)
 		} else {
 			panic("an access token is required")
@@ -81,15 +83,30 @@ func getBox(config *ConfigFile) (*dropbox.Dropbox, error) {
 	return box, nil
 }
 
-func getAccessToken(config *ConfigFile) (string, error) {
+func getAccessToken(config *ConfigFile, box *dropbox.Dropbox) (string, error) {
 	var err error
 
 	if len(config.Token) == 0 {
-		if err = box.Auth(); err == nil {
+		if err = authorize(box); err == nil {
 			config.Token = box.AccessToken()
 			config.Write(configFilename)
 		}
 	}
 
 	return config.Token, err
+}
+
+func authorize(box *dropbox.Dropbox) error {
+	var code, codeUrl string
+	var err error
+
+	codeUrl = box.Session.Config.AuthCodeURL("")
+	fmt.Printf("A browser window should have opened at\n%s\n" +
+	"Please authorize and enter the code: ", codeUrl)
+	if err = open.Start(codeUrl); err == nil {
+		fmt.Scanln(&code)
+		_, err = box.Session.Exchange(code)
+	}
+
+	return err
 }
