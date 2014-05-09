@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 )
 
-func archiveFolder(dropboxPath string, localPath string) error {
-	var files, err = getFiles(dropboxPath)
+func archiveFolder(config *ConfigFile) error {
+	var files, err = getFiles(config)
 	if err != nil {
 		return err
 	}
@@ -15,49 +15,45 @@ func archiveFolder(dropboxPath string, localPath string) error {
 	for _, file := range files {
 		var fileName = filepath.Base(file.Path)
 		fmt.Println("downloading " + fileName)
-		var downloadError = downloadFile(file.Path, localPath+`\`+fileName)
+		var downloadError = downloadFile(config, file.Path, config.LocalPath+`\`+fileName)
 		if downloadError != nil {
-			fmt.Println("error downloading: " + )
+			fmt.Println("error downloading: " + file.Path)
 			continue
 		}
 	}
-	return nil
+	return err
 }
 
-func getFiles(path string) ([]dropbox.Entry, error) {
-	var box = getBox()
+func getFiles(config *ConfigFile) ([]dropbox.Entry, error) {
+	var box = getBox(config)
 
-	var files, err = box.Metadata(path, true, false, "", "", 0)
+	var files, err = box.Metadata(config.DropboxPath, true, false, "", "", 0)
 
 	if err != nil {
+		fmt.Println(config.DropboxPath)
 		return nil, err
 	} else {
 		return files.Contents, nil
 	}
 }
 
-func downloadFile(dropboxPath string, localPath string) error {
-	var box = getBox()
+func downloadFile(config *ConfigFile, dropboxPath string, localPath string) error {
+	var box = getBox(config)
 	var err = box.DownloadToFile(dropboxPath, localPath, "")
 	if err != nil {
 		return err
 	}
+	return nil
 }
 
 var box *dropbox.Dropbox
 
-func getBox() *dropbox.Dropbox {
+func getBox(config *ConfigFile) *dropbox.Dropbox {
+
 	if box == nil {
-		var clientid, clientsecret, token string
-
-		//TODO: pull this info a file or sumthin
-		clientid = "uduoyfcovd614d3"
-		clientsecret = "9jruxmosec72ko1"
-		token = "TOKEN" //don't push this to github.
-
 		box = dropbox.NewDropbox()
-		box.SetAppInfo(clientid, clientsecret)
-		box.SetAccessToken(token)
+		box.SetAppInfo(config.ClientId, config.ClientSecret)
+		box.SetAccessToken(config.Token)
 	}
 
 	return box

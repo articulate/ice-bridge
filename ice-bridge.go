@@ -8,14 +8,14 @@ import (
 func main() {
 	fmt.Println("Hello from the ice-box")
 
-	//TODO: these should maybe be command-line args
-	var localPath = `C:\dev\dropbox_archive`
-	var dropboxPath = "images/wallpapers"
-	var err = archiveFolder(dropboxPath, localPath)
+	var config ConfigFile
+	_ = config.Read(".icebridge")
+
+	var err = archiveFolder(&config)
 
 	if err != nil {
 		fmt.Println("Error: " + err.Error())
+		panic(err)
 		return
 	}
-
 }
