@@ -2,6 +2,8 @@
 
 Dropbox Archiver written in Go
 
+<a href="http://zhb.io/zhb-now" target="_blank"><img src="https://raw.github.com/axiomzen/zenhub-now/master/powered-by-zenhub-720.png" alt="Powered by ZenHub"/></a>
+
 ## Getting Started
 
 Install Go and setup your [GOPATH](http://golang.org/doc/code.html#GOPATH).
