@@ -11,9 +11,7 @@ func getFilesToDownload(config *ConfigFile) ([]dropbox.Entry, error) {
 
 	fmt.Printf("Fetching delta with cursor %v\n", config.Cursor)
 	delta, err = getDelta(config)
-	if err != nil {
-		return nil, err
-	}
+	exitIf(err)
 
 	fmt.Printf("updating local cursor value to: %v\n", delta.Cursor)
 	config.Cursor = delta.Cursor
@@ -35,22 +33,19 @@ func getFilesToDownload(config *ConfigFile) ([]dropbox.Entry, error) {
 }
 
 func getDelta(config *ConfigFile) (*dropbox.DeltaPage, error) {
-	var box = getBox(config)
-	var delta, err = box.Delta(config.Cursor, "/"+config.DropboxPath)
-	if err != nil {
-		return nil, err
-	}
+
+	var box, boxErr = getBox(config)
+	exitIf(boxErr)
+	var delta, deltaErr = box.Delta(config.Cursor, "/"+config.DropboxPath)
+	exitIf(deltaErr)
 	return delta, nil
 }
 
 func getAllFiles(config *ConfigFile) ([]dropbox.Entry, error) {
-	var box = getBox(config)
+	var box, boxErr = getBox(config)
+	exitIf(boxErr)
 
 	var files, err = box.Metadata(config.DropboxPath, true, false, "", "", 0)
-
-	if err != nil {
-		return nil, err
-	} else {
-		return files.Contents, nil
-	}
+	exitIf(err)
+	return files.Contents, nil
 }
