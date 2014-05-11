@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/stacktic/dropbox"
 	"path/filepath"
+	"github.com/skratchdot/open-golang/open"
 )
 
 func archiveFolder(config *ConfigFile) error {
@@ -101,38 +102,74 @@ func downloader(config *ConfigFile, done <-chan struct{}, files <-chan dropbox.E
 }
 
 func getFiles(config *ConfigFile) ([]dropbox.Entry, error) {
-	var box = getBox(config)
+	box, err := getBox(config)
+	exitIf(err)
 
-	var files, err = box.Metadata(config.DropboxPath, true, false, "", "", 0)
+	files, err := box.Metadata(config.DropboxPath, true, false, "", "", 0)
+	exitIf(err)
 
-	if err != nil {
-		return nil, err
-	} else {
-		return files.Contents, nil
-	}
+	return files.Contents, nil
 }
 
 func downloadFile(config *ConfigFile, dropboxPath string, localPath string) error {
-	var box = getBox(config)
-	var err = box.DownloadToFile(dropboxPath, localPath, "")
-	if err != nil {
-		return err
+	var err error
+	var box *dropbox.Dropbox
+
+	if box, err = getBox(config); err == nil {
+		err = box.DownloadToFile(dropboxPath, localPath, "")
 	}
-	return nil
+	return err
 }
 
 var box *dropbox.Dropbox
 
-func getBox(config *ConfigFile) *dropbox.Dropbox {
+func getBox(config *ConfigFile) (*dropbox.Dropbox, error) {
 
 	if box == nil {
+		var err error
+		var token string
+
 		if config == nil {
 			panic("need config to get the dropbox instance")
 		}
+
 		box = dropbox.NewDropbox()
 		box.SetAppInfo(config.ClientId, config.ClientSecret)
-		box.SetAccessToken(config.Token)
+
+		if token, err = getAccessToken(config, box); err == nil {
+			box.SetAccessToken(token)
+		} else {
+			panic("an access token is required")
+		}
 	}
 
-	return box
+	return box, nil
+}
+
+func getAccessToken(config *ConfigFile, box *dropbox.Dropbox) (string, error) {
+	var err error
+
+	if len(config.Token) == 0 {
+		if err = authorize(box); err == nil {
+			config.Token = box.AccessToken()
+			config.Write(configFilename)
+		}
+	}
+
+	return config.Token, err
+}
+
+func authorize(box *dropbox.Dropbox) error {
+	var code, codeUrl string
+	var err error
+
+	codeUrl = box.Session.Config.AuthCodeURL("")
+	fmt.Printf("A browser window should have opened at\n%s\n" +
+	"Please authorize and enter the code: ", codeUrl)
+	if err = open.Start(codeUrl); err == nil {
+		fmt.Scanln(&code)
+		_, err = box.Session.Exchange(code)
+	}
+
+	return err
 }
