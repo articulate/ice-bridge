@@ -24,11 +24,26 @@ func cleanupOldFiles(config *ConfigFile) error {
 	}
 
 	for _, file := range files {
-
 		var daysOld = getFileAgeInDays(config, &file)
-		fmt.Printf("%v %v %v\n", file.Path, file.Modified, daysOld)
+		if daysOld > config.MaxFileAge {
+			fmt.Printf("File '%v' is %v days old; deleting...\n", file.Path, daysOld)
+			//TODO: only delete after double checking that we have a copy somewhere else
+			var dErr = deleteOldFile(config, &file)
+			if dErr != nil {
+				fmt.Println("non-fatal error deleting a file. continuing")
+				continue
+			}
+		}
 	}
 	return nil
+}
+
+func deleteOldFile(config *ConfigFile, file *dropbox.Entry) error {
+	var box, boxErr = getBox(config)
+	exitIf(boxErr)
+
+	var _, err = box.Delete(file.Path)
+	return err
 }
 
 func getFileAgeInDays(config *ConfigFile, file *dropbox.Entry) int {
