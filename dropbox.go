@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
-	"sync"
 	"errors"
+	"fmt"
+	"github.com/skratchdot/open-golang/open"
 	"github.com/stacktic/dropbox"
 	"path/filepath"
-	"github.com/skratchdot/open-golang/open"
+	"strings"
+	"sync"
 )
 
 func archiveFolder(config *ConfigFile) error {
@@ -65,7 +66,7 @@ func walkFiles(done <-chan struct{}, config *ConfigFile) (<-chan dropbox.Entry, 
 		var fileEntries []dropbox.Entry
 		var err error
 
-		fileEntries, err = getFiles(config)
+		fileEntries, err = getFilesToDownload(config)
 		if err != nil {
 			errc <- err
 		}
@@ -172,4 +173,12 @@ func authorize(box *dropbox.Dropbox) error {
 	}
 
 	return err
+}
+
+func fixDropboxPath(dropboxPath string) string {
+	if strings.Index(dropboxPath, "/") != 0 {
+		return "/" + dropboxPath
+	} else {
+		return dropboxPath
+	}
 }
