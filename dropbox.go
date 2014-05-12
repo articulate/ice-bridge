@@ -173,3 +173,11 @@ func authorize(box *dropbox.Dropbox) error {
 
 	return err
 }
+
+func fixDropboxPath(dropboxPath string) string {
+	if strings.Index(dropboxPath, "/") != 0 {
+		return "/" + dropboxPath
+	} else {
+		return dropboxPath
+	}
+}

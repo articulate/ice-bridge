@@ -36,7 +36,7 @@ func getDelta(config *ConfigFile) (*dropbox.DeltaPage, error) {
 
 	var box, boxErr = getBox(config)
 	exitIf(boxErr)
-	var delta, deltaErr = box.Delta(config.Cursor, "/"+config.DropboxPath)
+	var delta, deltaErr = box.Delta(config.Cursor, fixDropboxPath(config.DropboxPath))
 	exitIf(deltaErr)
 	return delta, nil
 }
