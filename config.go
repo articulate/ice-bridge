@@ -10,13 +10,15 @@ import (
 const configFilename = ".icebridge"
 
 type ConfigFile struct {
-	ClientId     string `json:"client_id"`
-	ClientSecret string `json:"client_secret"`
-	Token        string `json:"token"`
-	LocalPath    string `json:"local_path"`
-	DropboxPath  string `json:"dropbox_path"`
-	Cursor       string `json:"cursor"`
-	changed      bool   `json:"-"`
+	ClientId      string `json:"client_id"`
+	ClientSecret  string `json:"client_secret"`
+	Token         string `json:"token"`
+	LocalPath     string `json:"local_path"`
+	DropboxPath   string `json:"dropbox_path"`
+	Cursor        string `json:"cursor"`
+	MaxFileAge    int    `json:"max_file_age"`
+	FileAgeMethod string `json:"file_age_method"`
+	changed       bool   `json:"-"`
 }
 
 func (conf *ConfigFile) Read(fname string) error {
