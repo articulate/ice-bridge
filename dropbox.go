@@ -51,9 +51,9 @@ func archiveFolder(config *ConfigFile) error {
 }
 
 type download struct {
-	path string
+	path     string
 	revision string
-	err error
+	err      error
 }
 
 func walkFiles(done <-chan struct{}, config *ConfigFile) (<-chan dropbox.Entry, <-chan error) {
@@ -74,6 +74,11 @@ func walkFiles(done <-chan struct{}, config *ConfigFile) (<-chan dropbox.Entry, 
 		for _, file := range fileEntries {
 			if file.IsDir {
 				fmt.Printf("%v is a directory; skipping\n", file.Path)
+				continue
+			}
+
+			if file.Path == "" {
+				fmt.Printf("Blank entry found, skipping\n")
 				continue
 			}
 
@@ -100,16 +105,6 @@ func downloader(config *ConfigFile, done <-chan struct{}, files <-chan dropbox.E
 			return
 		}
 	}
-}
-
-func getFiles(config *ConfigFile) ([]dropbox.Entry, error) {
-	box, err := getBox(config)
-	exitIf(err)
-
-	files, err := box.Metadata(config.DropboxPath, true, false, "", "", 0)
-	exitIf(err)
-
-	return files.Contents, nil
 }
 
 func downloadFile(config *ConfigFile, dropboxPath string, localPath string) error {

@@ -17,7 +17,6 @@ func cleanupOldFiles(config *ConfigFile) error {
 		return nil
 	}
 
-	fmt.Println("Fetching files from the path")
 	var files, err = getAllFiles(config)
 	if err != nil {
 		return err
