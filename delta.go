@@ -13,6 +13,7 @@ func getFilesToDownload(config *ConfigFile) ([]dropbox.Entry, error) {
 	delta, err = getDelta(config)
 	exitIf(err)
 
+	//TODO: only update this cursor after we've processed and downloaded the files
 	fmt.Printf("updating local cursor value to: %v\n", delta.Cursor)
 	config.Cursor = delta.Cursor
 	err = config.Write(".icebridge")
@@ -24,8 +25,13 @@ func getFilesToDownload(config *ConfigFile) ([]dropbox.Entry, error) {
 		fmt.Printf("Delta indicates working copy needs to be reset. Downloading all files from %v\n", config.DropboxPath)
 		return getAllFiles(config)
 	} else {
+		fmt.Printf("Found %v deltas to process\n", len(delta.Entries))
 		var entries = make([]dropbox.Entry, len(delta.Entries))
 		for i, deltaEntry := range delta.Entries {
+			if deltaEntry.Entry == nil || deltaEntry.Entry.IsDeleted {
+				fmt.Printf("Delta entry for file %v indicates it was deleted, skipping.\n", deltaEntry)
+				continue
+			}
 			entries[i] = *deltaEntry.Entry
 		}
 		return entries, nil

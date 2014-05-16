@@ -15,6 +15,9 @@ func main() {
 
 	err = archiveFolder(&config)
 	exitIf(err)
+
+	err = cleanupOldFiles(&config)
+	exitIf(err)
 }
 
 func exitIf(err error) {
